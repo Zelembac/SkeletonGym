@@ -184,12 +184,13 @@
 
         var fadeOut = new BABYLON.StandardMaterial("fadeOut", scene);
         fadeOut.diffuseTexture = new BABYLON.Texture(
-          "gradient_ramp_2.png",
+          "gradient_ramp_3.png",
           scene
         );
         console.log(fadeOut);
         fadeOut.diffuseTexture.hasAlpha = true;
         fadeOut.diffuseColor = new BABYLON.Color3.FromHexString("#f7fafa");
+        // fadeOut.diffuseColor.visibility = 0;
 
         fadeOut.useAlphaFromDiffuseTexture = true;
         // fadeOut.useSpecularOverAlpha = true;
