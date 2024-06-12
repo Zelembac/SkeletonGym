@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+    <title>Babylon.js sample code</title>
+
+    <!-- Babylon.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js"></script>
+    <script src="https://assets.babylonjs.com/generated/Assets.js"></script>
+    <script src="https://cdn.babylonjs.com/recast.js"></script>
+    <script src="https://cdn.babylonjs.com/ammo.js"></script>
+    <script src="https://cdn.babylonjs.com/havok/HavokPhysics_umd.js"></script>
+    <script src="https://cdn.babylonjs.com/cannon.js"></script>
+    <script src="https://cdn.babylonjs.com/Oimo.js"></script>
+    <script src="https://cdn.babylonjs.com/earcut.min.js"></script>
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+    <script src="https://cdn.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
+    <script src="https://cdn.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script>
+    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.js"></script>
+    <script src="https://cdn.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
+    <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
+    <script src="https://cdn.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
+
+    <style>
+      html,
+      body {
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      #renderCanvas {
+        width: 100%;
+        height: 100%;
+        touch-action: none;
+      }
+
+      #canvasZone {
+        width: 100%;
+        height: 100%;
+      }
+
+      #skelleton {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 85vh;
+        left: 85vw;
+        width: 10vw;
+        height: 10vh;
+        border-radius: 2em;
+        font-size: 1.5em;
+        font-weight: 500;
+        background-color: aqua;
+        color: blue;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="canvasZone"><canvas id="renderCanvas"></canvas></div>
+    <button id="skelleton">Skeleton</button>
+    <script>
+      var canvas = document.getElementById("renderCanvas");
+
+      var startRenderLoop = function (engine, canvas) {
+        engine.runRenderLoop(function () {
+          if (sceneToRender && sceneToRender.activeCamera) {
+            sceneToRender.render();
+          }
+        });
+      };
+
+      var engine = null;
+      var scene = null;
+      var sceneToRender = null;
+      var createDefaultEngine = function () {
+        return new BABYLON.Engine(canvas, true, {
+          preserveDrawingBuffer: true,
+          stencil: true,
+          disableWebGL2Support: false,
+        });
+      };
+      var createScene = function () {
+        // This creates a basic Babylon Scene object (non-mesh)
+        var scene = new BABYLON.Scene(engine);
+
+        // This creates and positions a free camera (non-mesh)
+        const orbitCamera = new BABYLON.ArcRotateCamera(
+          "orbitCamera",
+          1.5,
+          1.3,
+          500,
+          new BABYLON.Vector3(0, 150, 0),
+          scene
+        );
+        orbitCamera.attachControl();
+        orbitCamera.panningSensibility *= 0.25;
+        orbitCamera.angularSensibilityX *= 2;
+        orbitCamera.angularSensibilityY *= 2;
+
+        // Constrain the camera to prevent clipping
+        orbitCamera.lowerBetaLimit = 0;
+        orbitCamera.lowerRadiusLimit = 400;
+        orbitCamera.upperBetaLimit = 1.4;
+        orbitCamera.upperRadiusLimit = 700;
+
+        // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
+        var light = new BABYLON.HemisphericLight(
+          "light1",
+          new BABYLON.Vector3(0, 400, 0),
+          scene
+        );
+
+        // Default intensity is 1. Let's dim the light a small amount
+        light.intensity = 0.7;
+
+        var greenMat = new BABYLON.StandardMaterial("greenMat", scene);
+        greenMat.emissiveColor = new BABYLON.Color3.FromHexString("#0297fa");
+        greenMat.diffuseColor = new BABYLON.Color3.FromHexString("#47d1ff");
+        greenMat.ambientColor = new BABYLON.Color3.FromHexString("#47d1ff");
+        // greenMat.albedoColor = new BABYLON.Color3.FromHexString("#47d1ff");
+
+        let mat;
+
+        let skelletonOn = true;
+        let skelleton;
+
+        document
+          .getElementById("skelleton")
+          .addEventListener("click", function () {
+            skelletonOn = !skelletonOn;
+            skelletonVisibility();
+          });
+
+        function skelletonVisibility() {
+          for (let i = 0; i < skelleton.length; i++) {
+            if (!skelletonOn) {
+              skelleton[i].visibility = 0;
+            } else {
+              skelleton[i].visibility = 1;
+            }
+          }
+        }
+
+        var fadeOut = new BABYLON.StandardMaterial("fadeOut", scene);
+        fadeOut.diffuseTexture = new BABYLON.Texture(
+          "gradient_ramp.png",
+          scene
+        );
+        console.log(fadeOut);
+        fadeOut.diffuseTexture.hasAlpha = true;
+        fadeOut.diffuseColor = new BABYLON.Color3.FromHexString("#f7fafa");
+
+        fadeOut.useAlphaFromDiffuseTexture = true;
+        // fadeOut.useSpecularOverAlpha = true;
+        // fadeOut.AlbedoTextureHasAlpha = true;
+        // fadeOut.albedoTexutre.hasAlpha = true;
+
+        var light1 = new BABYLON.DirectionalLight(
+          "light",
+          new BABYLON.Vector3(-1, -1, -1),
+          scene
+        );
+        light1.position = new BABYLON.Vector3(1, 600, 1);
+        //var light = new BABYLON.PointLight("light", new BABYLON.Vector3(0, 0, 0), scene);
+        //var light = new BABYLON.SpotLight("light", new BABYLON.Vector3(0, 0, 0), new BABYLON.Vector3(-1, -1, -1), Math.PI/4, 50, scene);
+
+        light1.intensity = 2;
+
+        const shadowGenerator = new BABYLON.ShadowGenerator(5024, light1);
+        // shadowGenerator.useBlurExponentialShadowMap = true;
+        // shadowGenerator.useKernelBlur = true;
+        // shadowGenerator.blurKernel = 64;
+        // shadowGenerator.forceBackFacesOnly = true;
+        shadowGenerator.useBlurExponentialShadowMap = true;
+        shadowGenerator.transperencyShadow = true;
+
+        BABYLON.NodeMaterial.ParseFromSnippetAsync("FRHXQV#", scene).then(
+          (nodeMaterial) => {
+            //   nodeMaterial.attachedBlocks[22]._storedValue =
+            //     nodeMaterialTimeScale;
+            //   nodeMaterial.attachedBlocks[10]._storedValue =
+            //     BABYLON.Color3.FromHexString(nodeMaterialColor);
+
+            mat = nodeMaterial;
+          }
+        );
+
+        // const environmentMap = BABYLON.CubeTexture.CreateFromPrefilteredData(
+        //   "environment2.env",
+        //   scene
+        // );
+        // scene.environmentTexture = environmentMap.clone();
+        // environmentMap.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+        // scene.environmentIntensity = 0.7;
+
+        BABYLON.SceneLoader.ImportMesh(
+          "",
+          "",
+          "Covek2.glb",
+          scene,
+          (meshes, particleSystem, skeleton, animationGroups) => {
+            meshes[0].scaling = new BABYLON.Vector3(-150, 150, 150);
+
+            meshes[0].rotation = new BABYLON.Vector3(0, 0, 0);
+            meshes[0].position.y = 65;
+            for (let i = 0; i < meshes.length; i++) {
+              //   meshes[i].renderingGroupId = 1;
+              //   meshes[i].material = mat;
+              shadowGenerator.addShadowCaster(meshes[i]);
+              meshes[i].receiveShadows = true;
+            }
+            shadowGenerator.addShadowCaster(meshes[0]);
+            meshes[0].receiveShadows = true;
+
+            animationGroups[0].start(true);
+          }
+        );
+        // var box = BABYLON.MeshBuilder.CreateBox(
+        //   "box",
+        //   {
+        //     size: 100,
+        //   },
+        //   scene
+        // );
+        // box.position = new BABYLON.Vector3(1, 300, 1);
+        // shadowGenerator.addShadowCaster(box);
+        // box.receiveShadows = true;
+        var ground = BABYLON.MeshBuilder.CreateGround(
+          "ground",
+          {
+            width: 1400,
+            height: 1400,
+          },
+          scene
+        );
+        ground.position.y = 30;
+
+        // setTimeout(() => {
+        //   box.material = mat;
+        // }, 2000);
+        ground.receiveShadows = true;
+        ground.material = fadeOut;
+
+        BABYLON.SceneLoader.ImportMesh(
+          "",
+          "",
+          "Kostur.glb",
+          scene,
+          (meshes, particleSystem, skeleton, animationGroups) => {
+            meshes[0].scaling = new BABYLON.Vector3(-150, 150, 150);
+
+            meshes[0].rotation = new BABYLON.Vector3(0, 0, 0);
+            meshes[0].position.y = 65;
+            // meshes[1].material = mat;
+            // meshes[2].material = mat;
+            // meshes[3].material = mat;
+            // meshes[4].material = mat;
+
+            for (let i = 0; i < meshes.length; i++) {
+              meshes[i].renderingGroupId = 2;
+              meshes[i].material = greenMat;
+            }
+
+            animationGroups[4].start(true);
+
+            skelleton = meshes;
+          }
+        );
+        BABYLON.SceneLoader.ImportMesh(
+          "",
+          "",
+          "traka2.glb",
+          scene,
+          (meshes, particleSystem, skeleton, animationGroups) => {
+            meshes[0].scaling = new BABYLON.Vector3(-190, 190, 190);
+            console.log(meshes);
+            // for (let i = 0; i < meshes.length; i++) {
+            //   //   meshes[i].renderingGroupId = 2;
+            //   meshes[i].material = mat;
+            // }
+
+            // meshes[6].renderingGroupId = 3;
+            // meshes[7].renderingGroupId = 3;
+            // meshes[8].renderingGroupId = 3;
+            // meshes[9].renderingGroupId = 3;
+            // meshes[10].renderingGroupId = 3;
+
+            shadowGenerator.addShadowCaster(meshes[0]);
+            meshes[0].receiveShadows = true;
+            meshes[0].position.y = 30;
+          }
+        );
+        BABYLON.SceneLoader.ImportMesh(
+          "",
+          "",
+          "Teretanka.glb",
+          scene,
+          (meshes, particleSystem, skeleton, animationGroups) => {
+            meshes[0].scaling = new BABYLON.Vector3(-260, 260, 260);
+            console.log(meshes);
+            meshes[0].position.y = 0;
+            for (let i = 0; i < meshes.length; i++) {
+              //   meshes[i].renderingGroupId = 2;
+              // meshes[i].material = mat;
+              // shadowGenerator.addShadowCaster(meshes[i]);
+              // meshes[i].receiveShadows = true;
+            }
+            // meshes[5].renderingGroupId = 3;
+          }
+        );
+
+        // Create a skydome
+        // const skydome = BABYLON.MeshBuilder.CreateBox(
+        //   "box",
+        //   {
+        //     size: 10000,
+        //     sideOrientation: BABYLON.Mesh.BACKSIDE,
+        //   },
+        //   scene
+        // );
+        // //skydome.position.y = 5000;
+        // skydome.isPickable = false;
+        // //skydome.receiveShadows = true;
+
+        // // Sets the skydome in ground projection mode
+        // const sky = new BABYLON.BackgroundMaterial("skyMaterial", scene);
+        // sky.reflectionTexture = environmentMap;
+        // sky.enableGroundProjection = true;
+        // sky.projectedGroundRadius = 5000;
+        // sky.projectedGroundHeight = 500;
+        // skydome.material = sky;
+
+        return scene;
+      };
+      window.initFunction = async function () {
+        var asyncEngineCreation = async function () {
+          try {
+            return createDefaultEngine();
+          } catch (e) {
+            console.log(
+              "the available createEngine function failed. Creating the default engine instead"
+            );
+            return createDefaultEngine();
+          }
+        };
+
+        window.engine = await asyncEngineCreation();
+        if (!engine) throw "engine should not be null.";
+        startRenderLoop(engine, canvas);
+        window.scene = createScene();
+      };
+      initFunction().then(() => {
+        sceneToRender = scene;
+      });
+
+      // Resize
+      window.addEventListener("resize", function () {
+        engine.resize();
+      });
+    </script>
+  </body>
+</html>
