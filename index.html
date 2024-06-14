@@ -135,21 +135,18 @@
         orbitCamera.upperBetaLimit = 1.4;
         orbitCamera.upperRadiusLimit = 700;
 
-        // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
         var light = new BABYLON.HemisphericLight(
           "light1",
           new BABYLON.Vector3(0, 400, 0),
           scene
         );
 
-        // Default intensity is 1. Let's dim the light a small amount
         light.intensity = 0.7;
 
         var greenMat = new BABYLON.StandardMaterial("greenMat", scene);
         greenMat.emissiveColor = new BABYLON.Color3.FromHexString("#0297fa");
         greenMat.diffuseColor = new BABYLON.Color3.FromHexString("#47d1ff");
         greenMat.ambientColor = new BABYLON.Color3.FromHexString("#47d1ff");
-        // greenMat.albedoColor = new BABYLON.Color3.FromHexString("#47d1ff");
 
         let mat;
 
@@ -181,12 +178,8 @@
         console.log(fadeOut);
         fadeOut.diffuseTexture.hasAlpha = true;
         fadeOut.diffuseColor = new BABYLON.Color3.FromHexString("#f7fafa");
-        // fadeOut.diffuseColor.visibility = 0;
 
         fadeOut.useAlphaFromDiffuseTexture = true;
-        // fadeOut.useSpecularOverAlpha = true;
-        // fadeOut.AlbedoTextureHasAlpha = true;
-        // fadeOut.albedoTexutre.hasAlpha = true;
 
         var light1 = new BABYLON.DirectionalLight(
           "light",
@@ -194,42 +187,24 @@
           scene
         );
         light1.position = new BABYLON.Vector3(1, 600, 1);
-        //var light = new BABYLON.PointLight("light", new BABYLON.Vector3(0, 0, 0), scene);
-        //var light = new BABYLON.SpotLight("light", new BABYLON.Vector3(0, 0, 0), new BABYLON.Vector3(-1, -1, -1), Math.PI/4, 50, scene);
 
         light1.intensity = 2;
 
         const shadowGenerator = new BABYLON.ShadowGenerator(5024, light1);
-        // shadowGenerator.useBlurExponentialShadowMap = true;
-        // shadowGenerator.useKernelBlur = true;
-        // shadowGenerator.blurKernel = 64;
-        // shadowGenerator.forceBackFacesOnly = true;
+
         shadowGenerator.useBlurExponentialShadowMap = true;
         shadowGenerator.transperencyShadow = true;
 
         BABYLON.NodeMaterial.ParseFromSnippetAsync("FRHXQV#", scene).then(
           (nodeMaterial) => {
-            //   nodeMaterial.attachedBlocks[22]._storedValue =
-            //     nodeMaterialTimeScale;
-            //   nodeMaterial.attachedBlocks[10]._storedValue =
-            //     BABYLON.Color3.FromHexString(nodeMaterialColor);
-
             mat = nodeMaterial;
           }
         );
 
-        // const environmentMap = BABYLON.CubeTexture.CreateFromPrefilteredData(
-        //   "environment2.env",
-        //   scene
-        // );
-        // scene.environmentTexture = environmentMap.clone();
-        // environmentMap.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
-        // scene.environmentIntensity = 0.7;
-
         BABYLON.SceneLoader.ImportMesh(
           "",
           "",
-          "Covek2.glb",
+          "Covek3.glb",
           scene,
           (meshes, particleSystem, skeleton, animationGroups) => {
             meshes[0].scaling = new BABYLON.Vector3(-150, 150, 150);
@@ -237,8 +212,6 @@
             meshes[0].rotation = new BABYLON.Vector3(0, 0, 0);
             meshes[0].position.y = 65;
             for (let i = 0; i < meshes.length; i++) {
-              //   meshes[i].renderingGroupId = 1;
-              //   meshes[i].material = mat;
               shadowGenerator.addShadowCaster(meshes[i]);
               meshes[i].receiveShadows = true;
             }
@@ -248,16 +221,7 @@
             animationGroups[0].start(true);
           }
         );
-        // var box = BABYLON.MeshBuilder.CreateBox(
-        //   "box",
-        //   {
-        //     size: 100,
-        //   },
-        //   scene
-        // );
-        // box.position = new BABYLON.Vector3(1, 300, 1);
-        // shadowGenerator.addShadowCaster(box);
-        // box.receiveShadows = true;
+
         var ground = BABYLON.MeshBuilder.CreateGround(
           "ground",
           {
@@ -268,9 +232,6 @@
         );
         ground.position.y = 30;
 
-        // setTimeout(() => {
-        //   box.material = mat;
-        // }, 2000);
         ground.receiveShadows = true;
         ground.material = fadeOut;
 
@@ -284,17 +245,14 @@
 
             meshes[0].rotation = new BABYLON.Vector3(0, 0, 0);
             meshes[0].position.y = 65;
-            // meshes[1].material = mat;
-            // meshes[2].material = mat;
-            // meshes[3].material = mat;
-            // meshes[4].material = mat;
 
             for (let i = 0; i < meshes.length; i++) {
               meshes[i].renderingGroupId = 2;
               meshes[i].material = greenMat;
             }
 
-            animationGroups[4].start(true);
+            animationGroups[0].start(true);
+            console.log(animationGroups);
 
             skelleton = meshes;
           }
@@ -302,21 +260,11 @@
         BABYLON.SceneLoader.ImportMesh(
           "",
           "",
-          "traka2.glb",
+          "traka3.glb",
           scene,
           (meshes, particleSystem, skeleton, animationGroups) => {
             meshes[0].scaling = new BABYLON.Vector3(-190, 190, 190);
             console.log(meshes);
-            // for (let i = 0; i < meshes.length; i++) {
-            //   //   meshes[i].renderingGroupId = 2;
-            //   meshes[i].material = mat;
-            // }
-
-            // meshes[6].renderingGroupId = 3;
-            // meshes[7].renderingGroupId = 3;
-            // meshes[8].renderingGroupId = 3;
-            // meshes[9].renderingGroupId = 3;
-            // meshes[10].renderingGroupId = 3;
 
             shadowGenerator.addShadowCaster(meshes[0]);
             meshes[0].receiveShadows = true;
@@ -332,36 +280,8 @@
             meshes[0].scaling = new BABYLON.Vector3(-260, 260, 260);
             console.log(meshes);
             meshes[0].position.y = 0;
-            for (let i = 0; i < meshes.length; i++) {
-              //   meshes[i].renderingGroupId = 2;
-              // meshes[i].material = mat;
-              // shadowGenerator.addShadowCaster(meshes[i]);
-              // meshes[i].receiveShadows = true;
-            }
-            // meshes[5].renderingGroupId = 3;
           }
         );
-
-        // Create a skydome
-        // const skydome = BABYLON.MeshBuilder.CreateBox(
-        //   "box",
-        //   {
-        //     size: 10000,
-        //     sideOrientation: BABYLON.Mesh.BACKSIDE,
-        //   },
-        //   scene
-        // );
-        // //skydome.position.y = 5000;
-        // skydome.isPickable = false;
-        // //skydome.receiveShadows = true;
-
-        // // Sets the skydome in ground projection mode
-        // const sky = new BABYLON.BackgroundMaterial("skyMaterial", scene);
-        // sky.reflectionTexture = environmentMap;
-        // sky.enableGroundProjection = true;
-        // sky.projectedGroundRadius = 5000;
-        // sky.projectedGroundHeight = 500;
-        // skydome.material = sky;
 
         return scene;
       };
