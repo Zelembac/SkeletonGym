@@ -143,10 +143,20 @@
 
         light.intensity = 0.7;
 
+        var light2 = new BABYLON.HemisphericLight(
+          "light2",
+          new BABYLON.Vector3(0, 400, 0),
+          scene
+        );
+
+        light2.intensity = 0.2;
+
         var greenMat = new BABYLON.StandardMaterial("greenMat", scene);
-        greenMat.emissiveColor = new BABYLON.Color3.FromHexString("#0297fa");
-        greenMat.diffuseColor = new BABYLON.Color3.FromHexString("#47d1ff");
-        greenMat.ambientColor = new BABYLON.Color3.FromHexString("#47d1ff");
+        greenMat.emissiveColor = new BABYLON.Color3.FromHexString("#85d1d9");
+        greenMat.diffuseColor = new BABYLON.Color3.FromHexString("#85d1d9");
+        greenMat.ambientColor = new BABYLON.Color3.FromHexString("#85d1d9");
+        greenMat.roughness = 1;
+        console.log(greenMat);
 
         let mat;
 
@@ -175,7 +185,7 @@
           "gradient_ramp_3.png",
           scene
         );
-        console.log(fadeOut);
+
         fadeOut.diffuseTexture.hasAlpha = true;
         fadeOut.diffuseColor = new BABYLON.Color3.FromHexString("#f7fafa");
 
@@ -188,7 +198,7 @@
         );
         light1.position = new BABYLON.Vector3(1, 600, 1);
 
-        light1.intensity = 2;
+        light1.intensity = 1;
 
         const shadowGenerator = new BABYLON.ShadowGenerator(5024, light1);
 
@@ -201,10 +211,12 @@
           }
         );
 
+        let body;
+
         BABYLON.SceneLoader.ImportMesh(
           "",
           "",
-          "Covek3.glb",
+          "Covek4.glb",
           scene,
           (meshes, particleSystem, skeleton, animationGroups) => {
             meshes[0].scaling = new BABYLON.Vector3(-150, 150, 150);
@@ -217,10 +229,14 @@
             }
             shadowGenerator.addShadowCaster(meshes[0]);
             meshes[0].receiveShadows = true;
+            body = meshes;
 
             animationGroups[0].start(true);
           }
         );
+        // setInterval(() => {
+        //   console.log(orbitCamera);
+        // }, 2000);
 
         var ground = BABYLON.MeshBuilder.CreateGround(
           "ground",
@@ -238,7 +254,7 @@
         BABYLON.SceneLoader.ImportMesh(
           "",
           "",
-          "Kostur.glb",
+          "Kostur5.glb",
           scene,
           (meshes, particleSystem, skeleton, animationGroups) => {
             meshes[0].scaling = new BABYLON.Vector3(-150, 150, 150);
@@ -249,6 +265,8 @@
             for (let i = 0; i < meshes.length; i++) {
               meshes[i].renderingGroupId = 2;
               meshes[i].material = greenMat;
+              light.excludedMeshes.push(meshes[i]);
+              light1.excludedMeshes.push(meshes[i]);
             }
 
             animationGroups[0].start(true);
@@ -257,6 +275,7 @@
             skelleton = meshes;
           }
         );
+        let traka;
         BABYLON.SceneLoader.ImportMesh(
           "",
           "",
@@ -269,6 +288,7 @@
             shadowGenerator.addShadowCaster(meshes[0]);
             meshes[0].receiveShadows = true;
             meshes[0].position.y = 30;
+            traka = [meshes[6], meshes[7], meshes[8], meshes[9]];
           }
         );
         BABYLON.SceneLoader.ImportMesh(
@@ -282,6 +302,38 @@
             meshes[0].position.y = 0;
           }
         );
+        let t = 0;
+
+        scene.onBeforeRenderObservable.add(() => {
+          t++;
+          if (t > 300) {
+            if (
+              orbitCamera.position.x < 476 &&
+              orbitCamera.position.x > -480 &&
+              orbitCamera.position.z < -48
+            ) {
+              for (let i = 0; i < traka.length; i++) {
+                traka[i].renderingGroupId = 1;
+              }
+              for (let i = 0; i < skelleton.length; i++) {
+                skelleton[i].renderingGroupId = 3;
+              }
+              for (let i = 0; i < body.length; i++) {
+                body[i].renderingGroupId = 2;
+              }
+            } else {
+              for (let i = 0; i < traka.length; i++) {
+                traka[i].renderingGroupId = 3;
+              }
+              for (let i = 0; i < skelleton.length; i++) {
+                skelleton[i].renderingGroupId = 2;
+              }
+              for (let i = 0; i < body.length; i++) {
+                body[i].renderingGroupId = 1;
+              }
+            }
+          }
+        });
 
         return scene;
       };
