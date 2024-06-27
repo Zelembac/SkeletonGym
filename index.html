@@ -167,6 +167,7 @@
           .getElementById("skelleton")
           .addEventListener("click", function () {
             skelletonOn = !skelletonOn;
+            console.log(orbitCamera.position);
             skelletonVisibility();
           });
 
@@ -275,11 +276,12 @@
             skelleton = meshes;
           }
         );
-        let traka = null;
+        let trakaL = null;
+        let trakaR = null;
         BABYLON.SceneLoader.ImportMesh(
           "",
           "",
-          "traka3.glb",
+          "traka4.glb",
           scene,
           (meshes, particleSystem, skeleton, animationGroups) => {
             meshes[0].scaling = new BABYLON.Vector3(-190, 190, 190);
@@ -289,9 +291,19 @@
             meshes[0].receiveShadows = true;
             meshes[0].position.y = 30;
             console.log(meshes);
-            traka = [meshes[6], meshes[7], meshes[8], meshes[9], meshes[10]];
-            for (let i = 0; i < traka.length; i++) {
-              traka[i].renderingGroupId = 2;
+            trakaL = [meshes[6], meshes[7], meshes[8], meshes[9], meshes[10]];
+            trakaR = [
+              meshes[11],
+              meshes[12],
+              meshes[13],
+              meshes[14],
+              meshes[15],
+            ];
+            for (let i = 0; i < trakaL.length; i++) {
+              trakaL[i].renderingGroupId = 2;
+            }
+            for (let i = 0; i < trakaR.length; i++) {
+              trakaR[i].renderingGroupId = 2;
             }
           }
         );
@@ -310,14 +322,22 @@
 
         scene.onBeforeRenderObservable.add(() => {
           t++;
-          if (body != null && skelleton != null && traka != null) {
+          if (
+            body != null &&
+            skelleton != null &&
+            trakaL != null &&
+            trakaR != null
+          ) {
             if (
               orbitCamera.position.x < 476 &&
               orbitCamera.position.x > -480 &&
               orbitCamera.position.z < -48
             ) {
-              for (let i = 0; i < traka.length; i++) {
-                traka[i].renderingGroupId = 1;
+              for (let i = 0; i < trakaL.length; i++) {
+                trakaL[i].renderingGroupId = 1;
+              }
+              for (let i = 0; i < trakaR.length; i++) {
+                trakaR[i].renderingGroupId = 1;
               }
               for (let i = 0; i < skelleton.length; i++) {
                 skelleton[i].renderingGroupId = 3;
@@ -326,8 +346,51 @@
                 body[i].renderingGroupId = 2;
               }
             } else {
-              for (let i = 0; i < traka.length; i++) {
-                traka[i].renderingGroupId = 3;
+              for (let i = 0; i < trakaL.length; i++) {
+                trakaL[i].renderingGroupId = 3;
+              }
+              for (let i = 0; i < trakaR.length; i++) {
+                trakaR[i].renderingGroupId = 3;
+              }
+              for (let i = 0; i < skelleton.length; i++) {
+                skelleton[i].renderingGroupId = 2;
+              }
+              for (let i = 0; i < body.length; i++) {
+                body[i].renderingGroupId = 1;
+              }
+            }
+
+            if (
+              orbitCamera.position.x < -420 &&
+              orbitCamera.position.x > -500 &&
+              orbitCamera.position.z < 277 &&
+              orbitCamera.position.z > -220
+            ) {
+              // console.log("tu");
+              for (let i = 0; i < trakaL.length; i++) {
+                trakaL[i].renderingGroupId = 3;
+              }
+              for (let i = 0; i < trakaR.length; i++) {
+                trakaR[i].renderingGroupId = 1;
+              }
+              for (let i = 0; i < skelleton.length; i++) {
+                skelleton[i].renderingGroupId = 2;
+              }
+              for (let i = 0; i < body.length; i++) {
+                body[i].renderingGroupId = 1;
+              }
+            } else if (
+              orbitCamera.position.x < 495 &&
+              orbitCamera.position.x > 440 &&
+              orbitCamera.position.z < 230 &&
+              orbitCamera.position.z > -210
+            ) {
+              // console.log("tu");
+              for (let i = 0; i < trakaL.length; i++) {
+                trakaL[i].renderingGroupId = 1;
+              }
+              for (let i = 0; i < trakaR.length; i++) {
+                trakaR[i].renderingGroupId = 3;
               }
               for (let i = 0; i < skelleton.length; i++) {
                 skelleton[i].renderingGroupId = 2;
